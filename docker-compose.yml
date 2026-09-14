@@ -1,0 +1,7 @@
+services:
+  web:
+    build: .
+    image: eniatec-website:latest
+    restart: unless-stopped
+    ports:
+      - '8080:80'

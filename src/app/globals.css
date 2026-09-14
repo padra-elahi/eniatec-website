@@ -1,0 +1,182 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #060f1f;
+  --bg-soft: #0b1a33;
+  --fg: #e8eefc;
+  --fg-muted: #93a4c4;
+  --line: rgba(148, 163, 184, 0.14);
+  --brand: #2563eb;
+  --brand-glow: #1e6bff;
+  --cyan: #22d3ee;
+}
+
+:root.light {
+  --bg: #f7f9fd;
+  --bg-soft: #ffffff;
+  --fg: #0b1a33;
+  --fg-muted: #4a5a78;
+  --line: rgba(16, 37, 70, 0.12);
+}
+
+@layer base {
+  * {
+    border-color: var(--line);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--fg);
+    font-feature-settings: 'ss01', 'ss02';
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background: rgba(37, 99, 235, 0.35);
+    color: #fff;
+  }
+
+  /* Persian digits everywhere numbers are typeset as text */
+  .fa-num {
+    font-variant-numeric: normal;
+  }
+}
+
+@layer components {
+  .container-x {
+    @apply mx-auto w-full max-w-[1200px] px-5 sm:px-8;
+  }
+
+  .muted {
+    color: var(--fg-muted);
+  }
+
+  .surface {
+    background-color: var(--bg-soft);
+  }
+
+  .card {
+    @apply relative rounded-2xl border p-6 transition-colors duration-300;
+    background-color: color-mix(in srgb, var(--bg-soft) 70%, transparent);
+    border-color: var(--line);
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs;
+    border-color: var(--line);
+    color: var(--fg-muted);
+  }
+
+  .btn {
+    @apply relative inline-flex select-none items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-all duration-300;
+  }
+
+  .btn-primary {
+    @apply btn text-white;
+    background: linear-gradient(135deg, #2563eb, #1e6bff 55%, #22d3ee 140%);
+    box-shadow: 0 10px 30px -12px rgba(37, 99, 235, 0.9);
+  }
+
+  .btn-primary:hover {
+    box-shadow: 0 16px 42px -10px rgba(37, 99, 235, 0.95);
+    transform: translateY(-2px);
+  }
+
+  .btn-ghost {
+    @apply btn border;
+    border-color: var(--line);
+    color: var(--fg);
+  }
+
+  .btn-ghost:hover {
+    border-color: rgba(37, 99, 235, 0.6);
+    background-color: rgba(37, 99, 235, 0.08);
+    transform: translateY(-2px);
+  }
+
+  .section {
+    @apply relative py-24 sm:py-32;
+  }
+
+  .heading {
+    @apply text-3xl font-extrabold leading-[1.35] sm:text-4xl md:text-[2.75rem];
+  }
+
+  .gradient-text {
+    background: linear-gradient(120deg, #60a5fa, #22d3ee 45%, #a78bfa);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+:root.light .gradient-text {
+    background: linear-gradient(120deg, #1d4ed8, #0891b2 45%, #6d28d9);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .hairline {
+    height: 1px;
+    background: linear-gradient(
+      to left,
+      transparent,
+      var(--line) 20%,
+      var(--line) 80%,
+      transparent
+    );
+  }
+}
+
+/* Spotlight that follows the cursor inside a card */
+.spotlight::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  background: radial-gradient(
+    380px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(37, 99, 235, 0.16),
+    transparent 62%
+  );
+  pointer-events: none;
+}
+
+.spotlight:hover::before {
+  opacity: 1;
+}
+
+.noise {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.28);
+  border-radius: 99px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
