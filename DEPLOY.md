@@ -120,6 +120,29 @@ To publish a new version of the site afterwards:
 cd /opt/eniatec-website && git pull && docker compose up -d --build
 ```
 
+### C1b — Same as C1, but without building on the server
+
+`next/font` downloads Vazirmatn during the build, so `docker compose up --build`
+needs the server to reach `fonts.googleapis.com`. If it cannot, build on your
+own machine and ship only the result — `deploy/docker-compose.static.yml` runs
+stock nginx over a bind-mounted `site/` directory:
+
+```bash
+# on your machine
+npm ci && npm run build
+rsync -avz --delete out/    user@server:/opt/eniatec-website/site/
+rsync -avz            deploy/ user@server:/opt/eniatec-website/deploy/
+
+# on the server
+cd /opt/eniatec-website
+docker compose -f deploy/docker-compose.static.yml up -d
+```
+
+The container is still called `eniatec-web` on port 80, so the `EXTRA_SITE` /
+`EXTRA_UPSTREAM` wiring from C1 is identical. Publishing a new version later is
+just the `site/` rsync again — nginx serves the new files immediately, with no
+restart.
+
 ### C2 — A plain server with Caddy
 
 Simplest option on a fresh machine: Caddy handles certificates and renewal by

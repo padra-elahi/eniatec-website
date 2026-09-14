@@ -1,0 +1,28 @@
+# Serves a PREBUILT `out/` — no build step on the server.
+#
+# Use this when the server cannot reach fonts.googleapis.com (next/font fetches
+# Vazirmatn at build time), or when you simply do not want a Node toolchain on
+# the server. You build on your own machine and ship only the static files.
+#
+#   # on your machine
+#   npm ci && npm run build
+#   rsync -avz --delete out/ user@server:/opt/eniatec-website/site/
+#   rsync -avz deploy/ user@server:/opt/eniatec-website/deploy/
+#
+#   # on the server
+#   cd /opt/eniatec-website
+#   docker compose -f deploy/docker-compose.static.yml up -d
+#
+# Publishing a new version afterwards is just the rsync of `site/` again —
+# nginx picks the files up immediately, no restart needed.
+services:
+  eniatec-web:
+    image: nginx:1.27-alpine
+    container_name: eniatec-web
+    restart: unless-stopped
+    volumes:
+      - ./site:/usr/share/nginx/html:ro
+      - ./deploy/docker-nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      # Localhost only: this is meant to sit behind a proxy that terminates TLS.
+      - '127.0.0.1:8080:80'
