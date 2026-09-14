@@ -1,7 +1,16 @@
+# Builds the static export into an nginx image and runs it.
+#
+#   docker compose up -d --build
+#
+# Port 8080 is bound to localhost only: this container is meant to sit behind a
+# reverse proxy that terminates TLS (Caddy, Traefik, nginx). If you want to
+# reach it directly from outside for a smoke test, change the mapping to
+# '8080:80' temporarily.
 services:
-  web:
+  eniatec-web:
     build: .
     image: eniatec-website:latest
+    container_name: eniatec-web
     restart: unless-stopped
     ports:
-      - '8080:80'
+      - '127.0.0.1:8080:80'
