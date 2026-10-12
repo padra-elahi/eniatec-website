@@ -4,4 +4,4 @@ out
 .git
 .github
 *.tar.gz
-data
+/data
