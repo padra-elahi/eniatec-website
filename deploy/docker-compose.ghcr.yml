@@ -1,0 +1,26 @@
+# Runs the image CI publishes to GHCR, kept current by Watchtower — the
+# automatic-update path. Every push to main rebuilds the image
+# (.github/workflows/docker.yml); Watchtower on the server notices the new
+# :latest within its poll interval and recreates this container.
+#
+#   # on the server, as /opt/eniatec-website/docker-compose.yml
+#   docker compose up -d
+#
+# The label opts this container in to a Watchtower started with
+# WATCHTOWER_LABEL_ENABLE=true (the one in the Bazrasi stack, on eniatec's
+# server). No host port: the Persian CRM Caddy reaches it as eniatec-web:80
+# over the persian-crm_default network.
+services:
+  eniatec-web:
+    image: ghcr.io/padra-elahi/eniatec-website:latest
+    container_name: eniatec-web
+    restart: unless-stopped
+    labels:
+      com.centurylinklabs.watchtower.enable: 'true'
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
+    name: persian-crm_default
