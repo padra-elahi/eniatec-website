@@ -69,7 +69,27 @@ providers do change their published IPs.
 
 ## Option C — Your own server
 
-Three variants, cheapest first in terms of new moving parts.
+### How eniatec.tech is deployed today
+
+The site runs on the Persian CRM server, behind that stack's Caddy, and
+updates itself — no manual step after a push:
+
+1. A push to `main` runs `.github/workflows/docker.yml`, which builds the
+   `Dockerfile` and publishes `ghcr.io/padra-elahi/eniatec-website:latest`.
+2. On the server, `/opt/eniatec-website/docker-compose.yml` is
+   `deploy/docker-compose.ghcr.yml`. Its container carries the Watchtower
+   opt-in label, and the Watchtower already running in the Bazrasi stack polls
+   GHCR every 2 minutes and recreates `eniatec-web` when `:latest` moves.
+3. The CRM's Caddy (`/opt/persian-crm/deploy/Caddyfile`) has a site block for
+   `eniatec.tech, www.eniatec.tech` that proxies to `eniatec-web:80`. TLS for
+   visitors terminates at the ParsPack CDN, like the CRM's own domains.
+
+Check what is deployed: `docker logs --since 1h bazrasi-watchtower-1` on the
+server. Force an update immediately:
+`cd /opt/eniatec-website && docker compose pull && docker compose up -d`.
+
+The variants below are the manual alternatives, cheapest first in terms of
+new moving parts.
 
 ### C1 — The server that already runs Persian CRM
 
