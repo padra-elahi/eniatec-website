@@ -1,5 +1,6 @@
-# Builds the static export into an nginx image and runs it.
+# Builds the site into a Node image and runs it.
 #
+#   cp .env.example .env   # then set ADMIN_PASSWORD and SESSION_SECRET
 #   docker compose up -d --build
 #
 # Port 8080 is bound to localhost only: this container is meant to sit behind a
@@ -12,5 +13,13 @@ services:
     image: eniatec-website:latest
     container_name: eniatec-web
     restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - eniatec-data:/data
     ports:
       - '127.0.0.1:8080:80'
+
+volumes:
+  eniatec-data:

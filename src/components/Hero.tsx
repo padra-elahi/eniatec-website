@@ -83,7 +83,7 @@ export function Hero() {
                 <path d="M19 12H5M11 18l-6-6 6-6" />
               </svg>
             </a>
-            <a href="#contact" className="btn-ghost">
+            <a href="/collaborate/" className="btn-ghost">
               {hero.secondaryCta}
             </a>
           </motion.div>
