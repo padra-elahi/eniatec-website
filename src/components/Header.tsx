@@ -87,7 +87,7 @@ export function Header() {
 
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <a href="#contact" className="btn-primary hidden !px-5 !py-2.5 sm:inline-flex">
+          <a href="/collaborate/" className="btn-primary hidden !px-5 !py-2.5 sm:inline-flex">
             شروع همکاری
           </a>
           <button
@@ -125,7 +125,7 @@ export function Header() {
                   {item.label}
                 </a>
               ))}
-              <a href="#contact" onClick={() => setOpen(false)} className="btn-primary mt-1">
+              <a href="/collaborate/" onClick={() => setOpen(false)} className="btn-primary mt-1">
                 شروع همکاری
               </a>
             </div>

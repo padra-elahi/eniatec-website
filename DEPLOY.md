@@ -1,75 +1,23 @@
 # Deploying to eniatec.tech
 
-The build output is a folder of static files (`out/`). Any static host will
-serve it. Pick one of the three paths below.
+The site is a small Node server (Next.js `output: 'standalone'`) packaged as a
+Docker image. The marketing pages are still prerendered at build time; the
+server adds the collaboration form's API (`/api/collaborate/`) and the admin
+panel (`/admin/`). Requests are stored in a SQLite file under `/data` inside
+the container, so **`/data` must be a volume**.
 
-Build command and output directory are the same everywhere:
+Two environment variables configure the admin panel:
 
-```
-Build command:     npm run build
-Output directory:  out
-Node version:      22
-```
+| Variable | Purpose |
+|---|---|
+| `ADMIN_PASSWORD` | Password for `/admin/`. Unset → the panel stays locked. |
+| `SESSION_SECRET` | Signs admin session cookies. Any long random string (`openssl rand -base64 32`). |
 
----
-
-## Option A — Cloudflare Pages (recommended)
-
-Free, global CDN, free TLS, and it handles the apex domain cleanly.
-
-1. **Push this repository to GitHub** (already done if you are reading this
-   there).
-2. Cloudflare dashboard → **Workers & Pages** → **Create** → **Pages** →
-   **Connect to Git** → pick this repository.
-3. Build settings:
-   - Framework preset: **Next.js (Static HTML Export)**
-   - Build command: `npm run build`
-   - Build output directory: `out`
-   - Environment variable: `NODE_VERSION = 22`
-     (add `NEXT_PUBLIC_CONTACT_ENDPOINT` here too if you wire up a form backend)
-4. Deploy. You get a `*.pages.dev` URL — check it works.
-5. **Custom domain**: Pages project → **Custom domains** → add `eniatec.tech`
-   and `www.eniatec.tech`.
-   - If `eniatec.tech`'s nameservers already point at Cloudflare, the DNS
-     records are created for you.
-   - Otherwise, move the domain's nameservers to Cloudflare first (Cloudflare
-     dashboard → **Add a site**), then repeat this step.
-
-DNS, if you ever need to set it by hand:
-
-| Type | Name | Value | Proxy |
-|---|---|---|---|
-| CNAME | `@` | `<project>.pages.dev` | Proxied |
-| CNAME | `www` | `<project>.pages.dev` | Proxied |
-
-Redirect `www` → apex under **Rules → Redirect Rules**, or leave both live.
+See [`.env.example`](.env.example).
 
 ---
 
-## Option B — Vercel or Netlify
-
-Same settings, connected to the same repository.
-
-**Vercel** — import the repo; it detects Next.js. Because `next.config.mjs`
-sets `output: 'export'`, the deploy is static. Add the domain under
-**Settings → Domains**, then at your registrar:
-
-| Type | Name | Value |
-|---|---|---|
-| A | `@` | `76.76.21.21` |
-| CNAME | `www` | `cname.vercel-dns.com` |
-
-**Netlify** — build command `npm run build`, publish directory `out`. Add the
-domain under **Domain management**; Netlify shows the exact records.
-
-Verify the values in the provider's dashboard before entering them — hosting
-providers do change their published IPs.
-
----
-
-## Option C — Your own server
-
-### How eniatec.tech is deployed today
+## How eniatec.tech is deployed today
 
 The site runs on the Persian CRM server, behind that stack's Caddy, and
 updates itself — no manual step after a push:
@@ -84,128 +32,95 @@ updates itself — no manual step after a push:
    `eniatec.tech, www.eniatec.tech` that proxies to `eniatec-web:80`. TLS for
    visitors terminates at the ParsPack CDN, like the CRM's own domains.
 
+### One-time step when moving to the version with the admin panel
+
+Watchtower swaps the image but keeps the container's old settings, so the
+volume and the admin password have to be added once by hand. Do this **before
+or right after** the first image with the admin panel is published:
+
+```bash
+cd /opt/eniatec-website
+# 1. Take the new compose file (adds the env file and the data volume).
+curl -fsSL https://raw.githubusercontent.com/padra-elahi/eniatec-website/main/deploy/docker-compose.ghcr.yml \
+  -o docker-compose.yml
+# 2. Set the admin credentials.
+cat > .env <<EOF
+ADMIN_PASSWORD=$(openssl rand -base64 18)
+SESSION_SECRET=$(openssl rand -base64 32)
+EOF
+chmod 600 .env
+cat .env            # note the password
+# 3. Recreate the container with the new settings.
+docker compose pull && docker compose up -d
+```
+
+After that, Watchtower updates keep the volume and the variables.
+
 Check what is deployed: `docker logs --since 1h bazrasi-watchtower-1` on the
 server. Force an update immediately:
 `cd /opt/eniatec-website && docker compose pull && docker compose up -d`.
 
-The variants below are the manual alternatives, cheapest first in terms of
-new moving parts.
+### Backups
 
-### C1 — The server that already runs Persian CRM
+All requests are in one file, `eniatec.db`, in the `eniatec-data` volume.
+SQLite's online backup is safe while the site is running:
+
+```bash
+docker run --rm -v eniatec-website_eniatec-data:/data -v "$PWD":/out alpine \
+  sh -c 'apk add -q sqlite && sqlite3 /data/eniatec.db ".backup /out/eniatec-$(date +%F).db"'
+```
+
+The admin panel's **CSV export** is the quick alternative for a readable copy.
+
+---
+
+## Other ways to run it
+
+### On the CRM server, building there
 
 That stack's Caddy already has a hook for exactly this: `EXTRA_SITE` /
 `EXTRA_UPSTREAM` in `deploy/Caddyfile`, plus
 `deploy/docker-compose.extra.example.yml`, which attaches Caddy to a second
-compose project's network. So the website becomes another container behind the
-same proxy, with the same automatic TLS. Nothing about the CRM changes.
+compose project's network.
 
 ```bash
-# 1. Put this repository on the server and start the container.
-#    It listens on 127.0.0.1:8080 and is named `eniatec-web`.
-sudo mkdir -p /opt/eniatec-website
-# …copy this repository there, then:
+# 1. Put this repository on the server, configure, start.
 cd /opt/eniatec-website
-docker compose up -d --build
-docker network ls | grep eniatec        # note the network name, e.g. eniatec-website_default
-```
+cp .env.example .env            # set ADMIN_PASSWORD and SESSION_SECRET
+docker compose up -d --build    # listens on 127.0.0.1:8080, named eniatec-web
+docker network ls | grep eniatec
 
-```bash
 # 2. Let the CRM's Caddy join that network.
 cd /opt/persian-crm
 cp deploy/docker-compose.extra.example.yml docker-compose.extra.yml
 # edit it: set `name:` under networks.other to the network from step 1
-```
 
-```bash
-# 3. Point the proxy at it. In /opt/persian-crm/.env:
-EXTRA_SITE=eniatec.tech, www.eniatec.tech
-EXTRA_UPSTREAM=eniatec-web:80
-```
-
-```bash
-# 4. Apply. FORCE=1 is what makes auto-update.sh redeploy after an .env edit.
-cd /opt/persian-crm
+# 3. In /opt/persian-crm/.env:
+#    EXTRA_SITE=eniatec.tech, www.eniatec.tech
+#    EXTRA_UPSTREAM=eniatec-web:80
 FORCE=1 ./deploy/auto-update.sh
 ```
 
-`auto-update.sh` picks up `docker-compose.extra.yml` automatically once it
-exists, so the overlay survives every later automatic update.
+`next/font` downloads Vazirmatn during the build, so building on the server
+needs it to reach `fonts.googleapis.com`. If it cannot, use the GHCR image
+path above instead — CI does the build.
 
-DNS: an `A` record for `eniatec.tech` (and `www`) pointing at that server.
-Caddy issues the certificate on first request.
-
-To publish a new version of the site afterwards:
+### A plain server with Caddy or nginx
 
 ```bash
-cd /opt/eniatec-website && git pull && docker compose up -d --build
+cp .env.example .env            # set ADMIN_PASSWORD and SESSION_SECRET
+docker compose up -d --build    # 127.0.0.1:8080
 ```
 
-### C1b — Same as C1, but without building on the server
+Then put a TLS-terminating proxy in front:
 
-`next/font` downloads Vazirmatn during the build, so `docker compose up --build`
-needs the server to reach `fonts.googleapis.com`. If it cannot, build on your
-own machine and ship only the result — `deploy/docker-compose.static.yml` runs
-stock nginx over a bind-mounted `site/` directory:
+- **Caddy** — `sudo cp deploy/Caddyfile /etc/caddy/Caddyfile && sudo systemctl reload caddy`.
+  Caddy issues and renews the certificate itself.
+- **nginx** — install `deploy/nginx.conf` as a site, confirm
+  `http://eniatec.tech` answers, then run
+  `sudo certbot --nginx -d eniatec.tech -d www.eniatec.tech`.
 
-```bash
-# on your machine
-npm ci && npm run build
-rsync -avz --delete out/    user@server:/opt/eniatec-website/site/
-rsync -avz            deploy/ user@server:/opt/eniatec-website/deploy/
-
-# on the server
-cd /opt/eniatec-website
-docker compose -f deploy/docker-compose.static.yml up -d
-```
-
-The container is still called `eniatec-web` on port 80, so the `EXTRA_SITE` /
-`EXTRA_UPSTREAM` wiring from C1 is identical. Publishing a new version later is
-just the `site/` rsync again — nginx serves the new files immediately, with no
-restart.
-
-### C2 — A plain server with Caddy
-
-Simplest option on a fresh machine: Caddy handles certificates and renewal by
-itself, with no certbot step.
-
-```bash
-# on your machine
-npm ci && npm run build
-rsync -avz --delete out/ user@server:/tmp/eniatec-out/
-
-# on the server
-sudo apt install caddy                 # if not already installed
-sudo mkdir -p /var/www/eniatec
-sudo rsync -a --delete /tmp/eniatec-out/ /var/www/eniatec/
-sudo cp deploy/Caddyfile /etc/caddy/Caddyfile
-sudo systemctl reload caddy
-```
-
-`deploy/Caddyfile` already covers the `www` alias, gzip/zstd, immutable caching
-for `/_next/static/`, the security headers and the 404 page.
-
-### C3 — A plain server with nginx
-
-```bash
-# on your machine
-npm ci && npm run build
-rsync -avz --delete out/ user@server:/var/www/eniatec/
-
-# on the server — HTTP first
-sudo cp deploy/nginx.conf /etc/nginx/sites-available/eniatec.tech
-sudo ln -s /etc/nginx/sites-available/eniatec.tech /etc/nginx/sites-enabled/
-sudo nginx -t && sudo systemctl reload nginx
-
-# confirm http://eniatec.tech serves the site, THEN add TLS
-sudo certbot --nginx -d eniatec.tech -d www.eniatec.tech
-```
-
-The order matters: `deploy/nginx.conf` is HTTP-only on purpose. certbot copies
-the server block into a TLS one and adds the redirect itself. Writing the
-`ssl_certificate` paths by hand first makes `nginx -t` fail, because the
-certificate does not exist yet.
-
-DNS at your registrar, for C2 and C3:
+DNS at your registrar:
 
 | Type | Name | Value |
 |---|---|---|
@@ -213,11 +128,19 @@ DNS at your registrar, for C2 and C3:
 | A | `www` | your server's IPv4 |
 | AAAA | `@` | your server's IPv6 (if any) |
 
+### Static hosts (Cloudflare Pages, Netlify)
+
+No longer supported: the collaboration form and the admin panel need the
+server. Vercel can run the server, but its filesystem is not persistent, so
+SQLite storage would not work there either.
+
 ---
 
 ## After it is live
 
-- `https://eniatec.tech/robots.txt` and `/sitemap.xml` are already served.
+- Open `https://eniatec.tech/admin/` and sign in with `ADMIN_PASSWORD`.
+- `https://eniatec.tech/robots.txt` and `/sitemap.xml` are served; `/admin/`
+  and `/api/` are excluded from indexing.
 - Submit the site to **Google Search Console** (verify by DNS TXT record).
 - Open graph preview: `public/og.svg`. Some social platforms do not render SVG
   previews — if you want a guaranteed preview card, export that file to a

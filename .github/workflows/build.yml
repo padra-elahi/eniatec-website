@@ -17,8 +17,3 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm run build
-      - uses: actions/upload-artifact@v4
-        with:
-          name: site
-          path: out
-          retention-days: 7

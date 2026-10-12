@@ -21,6 +21,7 @@ export function Contact() {
   const Mail = icons.mail;
   const Github = icons.github;
   const Check = icons.check;
+  const Arrow = icons.arrow;
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -90,6 +91,20 @@ export function Contact() {
                   <span dir="ltr">github.com/padra-elahi</span>
                 </a>
               </div>
+
+              <a
+                href="/collaborate/"
+                className="group mt-3 flex items-center gap-3 rounded-xl border border-brand/30 bg-brand/[0.06] px-4 py-3.5 transition-colors hover:border-brand/60 hover:bg-brand/10"
+              >
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-semibold">{contact.collabCta.title}</span>
+                  <span className="muted mt-0.5 block text-xs leading-5">{contact.collabCta.desc}</span>
+                </span>
+                <span className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-brand-light">
+                  {contact.collabCta.link}
+                  <Arrow className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+                </span>
+              </a>
 
               <ul className="mt-8 space-y-3">
                 {contact.assurances.map((a) => (

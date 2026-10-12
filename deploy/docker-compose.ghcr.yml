@@ -3,22 +3,34 @@
 # (.github/workflows/docker.yml); Watchtower on the server notices the new
 # :latest within its poll interval and recreates this container.
 #
-#   # on the server, as /opt/eniatec-website/docker-compose.yml
+#   # on the server, as /opt/eniatec-website/docker-compose.yml,
+#   # next to an .env holding ADMIN_PASSWORD and SESSION_SECRET
 #   docker compose up -d
 #
 # The label opts this container in to a Watchtower started with
 # WATCHTOWER_LABEL_ENABLE=true (the one in the Bazrasi stack, on eniatec's
 # server). No host port: the Persian CRM Caddy reaches it as eniatec-web:80
 # over the persian-crm_default network.
+#
+# Collaboration requests are stored in the `eniatec-data` volume. Watchtower
+# recreates the container but keeps named volumes, so they survive updates.
 services:
   eniatec-web:
     image: ghcr.io/padra-elahi/eniatec-website:latest
     container_name: eniatec-web
     restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - eniatec-data:/data
     labels:
       com.centurylinklabs.watchtower.enable: 'true'
     networks:
       - proxy
+
+volumes:
+  eniatec-data:
 
 networks:
   proxy:

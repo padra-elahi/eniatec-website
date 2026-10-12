@@ -123,6 +123,53 @@
     color: transparent;
   }
 
+  .field {
+    @apply w-full rounded-xl border px-4 py-3 text-sm outline-none transition-[border-color,box-shadow,background-color] duration-200;
+    background-color: color-mix(in srgb, var(--bg) 55%, transparent);
+    border-color: var(--line);
+    color: var(--fg);
+  }
+
+  .field::placeholder {
+    color: var(--fg-muted);
+    opacity: 0.7;
+  }
+
+  .field:hover {
+    border-color: color-mix(in srgb, var(--fg-muted) 45%, transparent);
+  }
+
+  .field:focus {
+    border-color: rgba(37, 99, 235, 0.7);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.16);
+  }
+
+  .field[aria-invalid='true'] {
+    border-color: rgba(244, 63, 94, 0.6);
+  }
+
+  .field[aria-invalid='true']:focus {
+    box-shadow: 0 0 0 4px rgba(244, 63, 94, 0.14);
+  }
+
+  select.field {
+    @apply appearance-none pl-10;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2393a4c4' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: left 0.85rem center;
+    background-size: 1rem;
+  }
+
+  select.field option {
+    background-color: var(--bg-soft);
+    color: var(--fg);
+  }
+
+  .focus-ring {
+    @apply outline-none focus-visible:ring-2 focus-visible:ring-brand/60 focus-visible:ring-offset-2;
+    --tw-ring-offset-color: var(--bg);
+  }
+
   .hairline {
     height: 1px;
     background: linear-gradient(

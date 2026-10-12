@@ -71,4 +71,123 @@ export const icons: Record<string, (p: IconProps) => ReactElement> = {
       <path d="m4 7 8 6 8-6" />
     </svg>
   ),
+  star: (p) => (
+    <svg {...base} {...p}>
+      <path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9L12 3.5Z" />
+    </svg>
+  ),
+  search: (p) => (
+    <svg {...base} {...p}>
+      <circle cx="11" cy="11" r="6.5" />
+      <path d="m20 20-4.2-4.2" />
+    </svg>
+  ),
+  inbox: (p) => (
+    <svg {...base} {...p}>
+      <path d="M3 13.5 5.4 5.6A2 2 0 0 1 7.3 4.2h9.4a2 2 0 0 1 1.9 1.4L21 13.5V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4.5Z" />
+      <path d="M3 13.5h5l1.5 2.5h5l1.5-2.5h5" />
+    </svg>
+  ),
+  chart: (p) => (
+    <svg {...base} {...p}>
+      <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />
+    </svg>
+  ),
+  logout: (p) => (
+    <svg {...base} {...p}>
+      <path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M9 16l-4-4 4-4M5 12h11" />
+    </svg>
+  ),
+  trash: (p) => (
+    <svg {...base} {...p}>
+      <path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" />
+    </svg>
+  ),
+  download: (p) => (
+    <svg {...base} {...p}>
+      <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />
+    </svg>
+  ),
+  external: (p) => (
+    <svg {...base} {...p}>
+      <path d="M14 4h6v6M20 4l-9 9M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4" />
+    </svg>
+  ),
+  copy: (p) => (
+    <svg {...base} {...p}>
+      <rect x="8" y="8" width="12" height="12" rx="2.5" />
+      <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" />
+    </svg>
+  ),
+  phone: (p) => (
+    <svg {...base} {...p}>
+      <path d="M5 4h3.5l1.7 4.3-2.2 1.4a11 11 0 0 0 6.3 6.3l1.4-2.2L20 15.5V19a1 1 0 0 1-1 1A16 16 0 0 1 4 5a1 1 0 0 1 1-1Z" />
+    </svg>
+  ),
+  user: (p) => (
+    <svg {...base} {...p}>
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 20.5a8 8 0 0 1 16 0" />
+    </svg>
+  ),
+  building: (p) => (
+    <svg {...base} {...p}>
+      <path d="M4 21V5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v16M15 9h3a2 2 0 0 1 2 2v10M2 21h20M8 7h3M8 11h3M8 15h3" />
+    </svg>
+  ),
+  globe: (p) => (
+    <svg {...base} {...p}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
+    </svg>
+  ),
+  note: (p) => (
+    <svg {...base} {...p}>
+      <path d="M5 4h14v11l-5 5H5V4Z" />
+      <path d="M14 20v-5h5M9 9h6M9 13h3" />
+    </svg>
+  ),
+  eye: (p) => (
+    <svg {...base} {...p}>
+      <path d="M2.5 12S6 5 12 5s9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  ),
+  eyeOff: (p) => (
+    <svg {...base} {...p}>
+      <path d="M3 3l18 18M10.6 5.1A9.7 9.7 0 0 1 12 5c6 0 9.5 7 9.5 7a17 17 0 0 1-2.9 3.8M6.6 6.6A17 17 0 0 0 2.5 12S6 19 12 19a9.6 9.6 0 0 0 4.4-1.1M9.9 9.9a3 3 0 0 0 4.2 4.2" />
+    </svg>
+  ),
+  chevron: (p) => (
+    <svg {...base} {...p}>
+      <path d="m15 6-6 6 6 6" />
+    </svg>
+  ),
+  lock: (p) => (
+    <svg {...base} {...p}>
+      <rect x="4" y="10" width="16" height="11" rx="2.5" />
+      <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+    </svg>
+  ),
+  menu: (p) => (
+    <svg {...base} {...p}>
+      <path d="M4 7h16M4 12h16M4 17h16" />
+    </svg>
+  ),
+  close: (p) => (
+    <svg {...base} {...p}>
+      <path d="M6 6l12 12M18 6 6 18" />
+    </svg>
+  ),
+  clock: (p) => (
+    <svg {...base} {...p}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 2" />
+    </svg>
+  ),
+  send: (p) => (
+    <svg {...base} {...p}>
+      <path d="M21 3 10 14M21 3l-7 18-4-7-7-4 18-7Z" />
+    </svg>
+  ),
 };
